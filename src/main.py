@@ -1,8 +1,14 @@
 import os
 import cv2
+import torch
+import ffmpeg
+from PIL import Image
+from transformers import CLIPProcessor, CLIPModel
+from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
 
+_EMPTY=''
 VIDEO_FILE_IN = './video/sample.mp4'
 OUTPUT_FOLDER = 'output'
 FRAMES_INTERVAL = 5
@@ -32,5 +38,24 @@ def extract_keyframes():
 
   cap.release()
 
+def embed_frames():
+  model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+  processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+  embeddings = []
+  for fname in sorted(os.listdir(OUTPUT_FOLDER)):
+    if not fname.endswith('.jpg'):
+      continue
+    img_path = os.path.join(OUTPUT_FOLDER, fname)
+    image = Image.open(img_path).convert('RGB')
+    inputs = processor(images=image, return_tensors="pt")
+    with torch.no_grad():
+      image_features = model.get_image_features(**inputs)
+      embeddings.append((fname, image_features.numpy()))
+      print(_EMPTY)
+      print(embeddings)
+      print(_EMPTY)
+    return embeddings
+
 if __name__ == "__main__":
   extract_keyframes()
+  embed_frames()
