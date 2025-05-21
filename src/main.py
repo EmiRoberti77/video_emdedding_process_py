@@ -7,6 +7,7 @@ from transformers import CLIPProcessor, CLIPModel
 from openai import OpenAI
 from dotenv import load_dotenv
 import constants.constants
+import shutil
 load_dotenv()
 
 _EMPTY=''
@@ -55,14 +56,19 @@ def embed_frames():
       print(constants.constants._SEP)
       print(embeddings)
       print(constants.constants._SEP)
+      print(constants.constants._EMBEDDING)
     return embeddings
   
-  def transfer_frames_to_s3():
+def transfer_frames_to_s3():
     return 0
   
-  def clean_up_files():
+def clean_up_output_dir():
+    shutil.rmtree(OUTPUT_FOLDER)
+    print(constants.constants._CLEAN_UP)
     return 0
 
 if __name__ == constants.constants._MAIN:
   extract_keyframes()
   embed_frames()
+  clean_up_output_dir()
+  transfer_frames_to_s3()
