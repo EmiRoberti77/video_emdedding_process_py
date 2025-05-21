@@ -6,6 +6,7 @@ from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
 from openai import OpenAI
 from dotenv import load_dotenv
+import constants.constants
 load_dotenv()
 
 _EMPTY=''
@@ -51,10 +52,16 @@ def embed_frames():
     with torch.no_grad():
       image_features = model.get_image_features(**inputs)
       embeddings.append((fname, image_features.numpy()))
-      print(_EMPTY)
+      print(constants.constants._SEP)
       print(embeddings)
       print(_EMPTY)
     return embeddings
+  
+  def transfer_frames_to_s3():
+    return 0
+  
+  def clean_up_files():
+    return 0
 
 if __name__ == "__main__":
   extract_keyframes()
