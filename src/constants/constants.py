@@ -9,5 +9,6 @@ PROCESS_COMPLETED = 'process_completed'
 EMBEDDING = "Embedding " + PROCESS_COMPLETED
 CLEAN_UP = "Clean up " + PROCESS_COMPLETED
 VIDEO_FILE_IN = './video/sample.mp4'
+AUDIO_FILE_IN = './audio/sample.mp3'
 OUTPUT_FOLDER = 'output'
 FRAMES_INTERVAL = 5

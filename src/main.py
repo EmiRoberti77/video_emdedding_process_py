@@ -8,11 +8,15 @@ from transformers import CLIPProcessor, CLIPModel
 from dotenv import load_dotenv
 import shutil
 from constants import constants
+import whisper
+from openai import OpenAI
 
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 print(OPENAI_API_KEY)
+
+model = OpenAI(api_key=OPENAI_API_KEY)
 
 
 def extract_keyframes():
@@ -60,11 +64,23 @@ def embed_frames():
             print(constants.EMBEDDING)
     return embeddings
 
+def embed_text(text):
+    """Function to embed text, this text has been extracted from the audio track"""
+    response = model.embeddings.create(
+        model="text-embedding-3-small",
+        input=text
+    )
+    return response.data[0].embedding
 
 def transfer_frames_to_s3():
     """Placeholder for uploading frames to S3."""
     return 0
 
+def transcribe_audio(model):
+    """transcribe audio to text using whisper"""
+    model = whisper.load_model(model)
+    result = model.transcribe(constants.AUDIO_FILE_IN)
+    return result["text"]
 
 def clean_up_output_dir():
     """Remove output directory and log clean-up."""
@@ -74,7 +90,21 @@ def clean_up_output_dir():
 
 
 if __name__ == constants.MAIN:
-    extract_keyframes()
-    embed_frames()
-    clean_up_output_dir()
+    video = input('>video y/n?')
+    print(f"video:{video}")
+    audio = input('>audio y/n?')
+    print(f"audio:{audio}")
+
+    if video == 'y':
+        extract_keyframes()
+        embed_frames()
+
+    if audio == 'y':
+        audio_text = transcribe_audio('tiny') #could also pass turbo for higher quality speech to text decode
+        audio_embedding = embed_text(audio_text)
+        print(audio_text)
+        print(audio_embedding)
+    
+    ##clean_up_output_dir()
     transfer_frames_to_s3()
+    
