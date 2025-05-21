@@ -69,7 +69,8 @@ def transfer_frames_to_s3():
 
 def transcribe_audio():
     """transcribe audio to text using whisper"""
-    model = whisper.load_model("turbo")
+    #model = whisper.load_model("turbo")
+    model = whisper.load_model("tiny")
     result = model.transcribe(constants.AUDIO_FILE_IN)
     print(result["text"])
 
