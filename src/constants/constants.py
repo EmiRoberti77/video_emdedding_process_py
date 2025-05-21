@@ -1,11 +1,13 @@
-_EMPTY = ""
-_SEP='_______________________________'
-_JPG = '.jpg'
-_RGB = 'RGB'
-_MAIN = '__main__'
-_PROCESS_COMPLETED = 'process_completed'
-_EMBEDDING = "Embedding " + _PROCESS_COMPLETED
-_CLEAN_UP = "Clean up " + _PROCESS_COMPLETED
-_VIDEO_FILE_IN = './video/sample.mp4'
-_OUTPUT_FOLDER = 'output'
-_FRAMES_INTERVAL = 5
+"""Constants used across the application."""
+
+EMPTY = ""
+SEP = '_______________________________'
+JPG = '.jpg'
+RGB = 'RGB'
+MAIN = '__main__'
+PROCESS_COMPLETED = 'process_completed'
+EMBEDDING = "Embedding " + PROCESS_COMPLETED
+CLEAN_UP = "Clean up " + PROCESS_COMPLETED
+VIDEO_FILE_IN = './video/sample.mp4'
+OUTPUT_FOLDER = 'output'
+FRAMES_INTERVAL = 5
