@@ -14,32 +14,23 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🐍 Install Python 3.13 (manual)
-        run: |
-          sudo apt update
-          sudo apt install -y wget build-essential libssl-dev zlib1g-dev \
-            libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev \
-            libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev
-          wget https://www.python.org/ftp/python/3.13.0a5/Python-3.13.0a5.tgz
-          tar -xzf Python-3.13.0a5.tgz
-          cd Python-3.13.0a5
-          ./configure --enable-optimizations
-          make -j$(nproc)
-          sudo make altinstall
-          python3.13 --version
+      - name: 🐍 Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-      - name: 📦 Install Requirements
+      - name: 📦 Install Dependencies
         run: |
-          python3.13 -m pip install --upgrade pip
-          python3.13 -m pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pylint
 
       - name: 🧹 Auto-format (optional)
         run: |
-          python3.13 -m pip install autopep8 isort
+          pip install autopep8 isort
           autopep8 --in-place --aggressive --aggressive $(git ls-files '*.py')
           isort $(git ls-files '*.py')
 
       - name: 🔍 Run Pylint
         run: |
-          python3.13 -m pip install pylint
-          python3.13 -m pylint $(git ls-files '*.py')
+          pylint $(git ls-files '*.py')
