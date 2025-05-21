@@ -76,5 +76,5 @@ def clean_up_output_dir():
 if __name__ == constants.MAIN:
     extract_keyframes()
     embed_frames()
-    clean_up_output_dir()
+    ##clean_up_output_dir()
     transfer_frames_to_s3()
