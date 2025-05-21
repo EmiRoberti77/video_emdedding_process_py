@@ -8,6 +8,7 @@ from transformers import CLIPProcessor, CLIPModel
 from dotenv import load_dotenv
 import shutil
 from constants import constants
+import whisper
 
 load_dotenv()
 
@@ -66,6 +67,12 @@ def transfer_frames_to_s3():
     return 0
 
 
+def transcribe_audio():
+    """transcribe audio to text using whisper"""
+    model = whisper.load_model("turbo")
+    result = model.transcribe(constants.AUDIO_FILE_IN)
+    print(result["text"])
+
 def clean_up_output_dir():
     """Remove output directory and log clean-up."""
     shutil.rmtree(constants.OUTPUT_FOLDER)
@@ -74,7 +81,19 @@ def clean_up_output_dir():
 
 
 if __name__ == constants.MAIN:
-    extract_keyframes()
-    embed_frames()
+    video = input('>video y/n?')
+    print(f"video:{video}")
+    audio = input('>audio y/n?')
+    print(f"audio:{audio}")
+
+    if video == 'y':
+        extract_keyframes()
+        embed_frames()
+
+    if audio == 'y':
+        audio_text = transcribe_audio()
+        print(audio_text)
+    
     ##clean_up_output_dir()
     transfer_frames_to_s3()
+    
