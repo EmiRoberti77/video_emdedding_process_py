@@ -44,17 +44,17 @@ def embed_frames():
   processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
   embeddings = []
   for fname in sorted(os.listdir(OUTPUT_FOLDER)):
-    if not fname.endswith('.jpg'):
+    if not fname.endswith(constants.constants._JPG):
       continue
     img_path = os.path.join(OUTPUT_FOLDER, fname)
-    image = Image.open(img_path).convert('RGB')
+    image = Image.open(img_path).convert(constants.constants._RGB)
     inputs = processor(images=image, return_tensors="pt")
     with torch.no_grad():
       image_features = model.get_image_features(**inputs)
       embeddings.append((fname, image_features.numpy()))
       print(constants.constants._SEP)
       print(embeddings)
-      print(_EMPTY)
+      print(constants.constants._SEP)
     return embeddings
   
   def transfer_frames_to_s3():
@@ -63,6 +63,6 @@ def embed_frames():
   def clean_up_files():
     return 0
 
-if __name__ == "__main__":
+if __name__ == constants.constants._MAIN:
   extract_keyframes()
   embed_frames()
