@@ -1,3 +1,4 @@
+_EMPTY = ""
 _SEP='_______________________________'
 _JPG = '.jpg'
 _RGB = 'RGB'
@@ -5,3 +6,6 @@ _MAIN = '__main__'
 _PROCESS_COMPLETED = 'process_completed'
 _EMBEDDING = "Embedding " + _PROCESS_COMPLETED
 _CLEAN_UP = "Clean up " + _PROCESS_COMPLETED
+_VIDEO_FILE_IN = './video/sample.mp4'
+_OUTPUT_FOLDER = 'output'
+_FRAMES_INTERVAL = 5
