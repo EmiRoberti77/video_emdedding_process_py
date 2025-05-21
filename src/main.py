@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import constants.constants
 import shutil
 load_dotenv()
-
+#test
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 print(OPENAI_API_KEY)
 
