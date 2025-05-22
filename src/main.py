@@ -14,6 +14,7 @@ import re
 
 load_dotenv()
 
+_DEBUG = False
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 print(OPENAI_API_KEY)
 
@@ -65,7 +66,7 @@ def embed_frames():
             print(constants.EMBEDDING)
     return embeddings
 
-def chunk_text(text):
+def chunk_text(text, chunk_size=200):
     """
         Function to break large text that has come from audio transcoding.
         When looking to turn text into embeddings, best to keep to about 
@@ -76,6 +77,8 @@ def chunk_text(text):
     word_count = len(words)
     print('text len', text_len)
     print('word count', word_count)
+    chunks = [" ".join(words[i:i + chunk_size]) for i in range(0, word_count, chunk_size)]
+    return chunks
 
 
 def embed_text(text):
@@ -102,6 +105,12 @@ def clean_up_output_dir():
     print(constants.CLEAN_UP)
     return 0
 
+def save_embedding_to_database(text, embedding, source):
+    print(len(text))
+    print(len(embedding))
+    print('saving to database')
+    return 0
+
 
 if __name__ == constants.MAIN:
     video = input('>video y/n?')
@@ -114,8 +123,13 @@ if __name__ == constants.MAIN:
         embed_frames()
 
     if audio == 'y':
-        audio_text = transcribe_audio('tiny') #could also pass turbo for higher quality speech to text decode
-        chunk_text(audio_text)
+        audio_text = transcribe_audio('tiny')
+        speech_chunks = chunk_text(audio_text)
+        if _DEBUG ==  True:
+            [print(F"[{chunk}]") for chunk in speech_chunks]
+
+        [save_embedding_to_database(chunk, embed_text(chunk), 'file.mp3') for chunk in speech_chunks]
+
         #audio_embedding = embed_text(audio_text)
         #print(audio_text)
         #print(audio_embedding)
