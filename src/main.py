@@ -10,6 +10,7 @@ import shutil
 from constants import constants
 import whisper
 from openai import OpenAI
+import re
 
 load_dotenv()
 
@@ -64,6 +65,19 @@ def embed_frames():
             print(constants.EMBEDDING)
     return embeddings
 
+def chunk_text(text):
+    """
+        Function to break large text that has come from audio transcoding.
+        When looking to turn text into embeddings, best to keep to about 
+        512, 1024 tokens. About 200 words.
+    """
+    text_len = len(text)
+    words = re.findall(r'\b\w+\b', text)
+    word_count = len(words)
+    print('text len', text_len)
+    print('word count', word_count)
+
+
 def embed_text(text):
     """Function to embed text, this text has been extracted from the audio track"""
     response = model.embeddings.create(
@@ -73,7 +87,7 @@ def embed_text(text):
     return response.data[0].embedding
 
 def transfer_frames_to_s3():
-    """Placeholder for uploading frames to S3."""
+    """Placeholder for uploading frames to S3"""
     return 0
 
 def transcribe_audio(model):
@@ -101,9 +115,10 @@ if __name__ == constants.MAIN:
 
     if audio == 'y':
         audio_text = transcribe_audio('tiny') #could also pass turbo for higher quality speech to text decode
-        audio_embedding = embed_text(audio_text)
-        print(audio_text)
-        print(audio_embedding)
+        chunk_text(audio_text)
+        #audio_embedding = embed_text(audio_text)
+        #print(audio_text)
+        #print(audio_embedding)
     
     ##clean_up_output_dir()
     transfer_frames_to_s3()
