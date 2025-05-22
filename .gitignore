@@ -1,4 +1,5 @@
 venv
 .env
 output
+chroma_store
 __pycache__/

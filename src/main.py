@@ -11,6 +11,7 @@ from constants import constants
 import whisper
 from openai import OpenAI
 import re
+import chromadb
 
 load_dotenv()
 
@@ -19,6 +20,14 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 print(OPENAI_API_KEY)
 
 model = OpenAI(api_key=OPENAI_API_KEY)
+
+chroma_client = chromadb.Client(chromadb.config.Settings(
+    persist_directory=constants.VECTOR_STORE
+))
+print(constants.VECTOR_DB_INIT)
+
+collection = chroma_client.get_or_create_collection(name=constants.VECTOR_COLLECTION_NAME)
+print(constants.VECTOR_COLLECTION_CREATED)
 
 
 def extract_keyframes():
