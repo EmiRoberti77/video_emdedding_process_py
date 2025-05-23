@@ -1,5 +1,11 @@
 """Constants used across the application."""
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
+
 EMPTY = ""
 SEP = '_______________________________'
 JPG = '.jpg'
@@ -16,3 +22,4 @@ VECTOR_COLLECTION_NAME = "audio_video_vectors"
 VECTOR_STORE = "./chroma_store"
 VECTOR_DB_INIT = 'initialized vector db'
 VECTOR_COLLECTION_CREATED = 'vector collection created'
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

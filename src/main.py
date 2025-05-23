@@ -5,30 +5,18 @@ import cv2
 import torch
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
-from dotenv import load_dotenv
 import shutil
 from constants import constants
+from vector_db.collection_manager import CollectionManager as CM
 import whisper
 from openai import OpenAI
 import re
-import chromadb
-
-load_dotenv()
 
 _DEBUG = False
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-print(OPENAI_API_KEY)
+print(constants.OPENAI_API_KEY)
+model = OpenAI(api_key=constants.OPENAI_API_KEY)
 
-model = OpenAI(api_key=OPENAI_API_KEY)
-
-chroma_client = chromadb.Client(chromadb.config.Settings(
-    persist_directory=constants.VECTOR_STORE
-))
-print(constants.VECTOR_DB_INIT)
-
-collection = chroma_client.get_or_create_collection(name=constants.VECTOR_COLLECTION_NAME)
-print(constants.VECTOR_COLLECTION_CREATED)
-
+cm = CM(constants.VECTOR_STORE, constants.VECTOR_COLLECTION_NAME)
 
 def extract_keyframes():
     """Extract keyframes from video at fixed intervals."""
