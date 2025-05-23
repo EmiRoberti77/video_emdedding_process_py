@@ -133,4 +133,3 @@ if __name__ == constants.MAIN:
     
     ##clean_up_output_dir()
     transfer_frames_to_s3()
-    
