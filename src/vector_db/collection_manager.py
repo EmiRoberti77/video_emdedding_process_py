@@ -1,9 +1,9 @@
-import dataclasses
+from dataclasses import dataclass
 import chromadb
 from typing import List
 from constants.constants import VECTOR_DB_INIT, VECTOR_COLLECTION_CREATED
 
-@dataclasses
+@dataclass
 class FrameData:    
     embedding: List[float]
     time_code: float
@@ -21,21 +21,27 @@ class CollectionManager:
         ))
         print(VECTOR_DB_INIT)
 
-        collection = self.chroma_client.get_or_create_collection(name=collection)
+        self.collection = self.chroma_client.get_or_create_collection(name=collection)
         print(VECTOR_COLLECTION_CREATED)
 
     def save_frame_data(self, frameData:FrameData)->int:
-        self.collection.add(
-            ids=[frameData.id],
-            embedding=[frameData.embedding],
-            metadata=[{
-                "video_file":frameData.video_file,
-                "frame_file":frameData.frame_file,
-                "time_code":frameData.time_code,
-                "text":frameData.text,
-                "frame_type":frameData.frame_type
-            }]
-        )
+        try:
+            self.collection.add(
+                ids=[frameData.id],
+                embeddings=[frameData.embedding],
+                metadatas=[{
+                    "video_file":frameData.video_file,
+                    "frame_file":frameData.frame_file,
+                    "time_code":frameData.time_code,
+                    "text":frameData.text,
+                    "frame_type":frameData.frame_type
+                }]
+            )
+            return 0
+        except Exception as e:
+          print(e)
+          return 1
+            
 
     
 

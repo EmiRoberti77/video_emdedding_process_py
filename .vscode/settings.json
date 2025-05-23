@@ -4,6 +4,7 @@
     "dotenv",
     "imwrite",
     "keyframes",
+    "metadatas",
     "OPENAI",
     "pyenv",
     "venv",

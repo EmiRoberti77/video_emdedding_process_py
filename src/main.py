@@ -1,16 +1,19 @@
 """Main module for extracting and embedding keyframes."""
 
 import os
+import shutil
+import re
+from typing import List
+import uuid
 import cv2
 import torch
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
-import shutil
 from constants import constants
-from vector_db.collection_manager import CollectionManager as CM
+from vector_db.collection_manager import CollectionManager as CM, FrameData
 import whisper
 from openai import OpenAI
-import re
+
 
 _DEBUG = False
 print(constants.OPENAI_API_KEY)
@@ -18,9 +21,10 @@ model = OpenAI(api_key=constants.OPENAI_API_KEY)
 
 cm = CM(constants.VECTOR_STORE, constants.VECTOR_COLLECTION_NAME)
 
-def extract_keyframes():
+def extract_keyframes()->List[str]:
     """Extract keyframes from video at fixed intervals."""
     print('keyframe extraction', constants.VIDEO_FILE_IN)
+    frameList = []
     print(os.path.exists(constants.VIDEO_FILE_IN))
     os.makedirs(constants.OUTPUT_FOLDER, exist_ok=True)
     cap = cv2.VideoCapture(constants.VIDEO_FILE_IN)
@@ -38,9 +42,11 @@ def extract_keyframes():
             fname = os.path.join(constants.OUTPUT_FOLDER, f"frame_{saved}.jpg")
             cv2.imwrite(fname, frame)
             saved += 1
+            frameList.append(fname)
         count += 1
 
     cap.release()
+    return frameList
 
 
 def embed_frames():
@@ -102,10 +108,20 @@ def clean_up_output_dir():
     print(constants.CLEAN_UP)
     return 0
 
-def save_embedding_to_database(text, embedding, source):
+def save_embedding_to_database(text, embedding, video_file, frame_file, time_code):
     print(len(text))
     print(len(embedding))
-    print('saving to database')
+    frameData = FrameData(
+        id=str(uuid.uuid4()),
+        text=text,
+        embedding=embedding,
+        video_file=video_file,
+        frame_file=frame_file,
+        time_code=time_code,
+        frame_type='image'
+    )
+    ret = cm.save_frame_data(frameData=frameData)
+    print('saving to database', ret)
     return 0
 
 
@@ -114,18 +130,18 @@ if __name__ == constants.MAIN:
     print(f"video:{video}")
     audio = input('>audio y/n?')
     print(f"audio:{audio}")
-
-    if video == 'y':
-        extract_keyframes()
+    frameList = extract_keyframes()
+    if video == 'y':        
         embed_frames()
 
     if audio == 'y':
+        
         audio_text = transcribe_audio('tiny')
         speech_chunks = chunk_text(audio_text)
         if _DEBUG ==  True:
             [print(F"[{chunk}]") for chunk in speech_chunks]
 
-        [save_embedding_to_database(chunk, embed_text(chunk), 'file.mp3') for chunk in speech_chunks]
+        [save_embedding_to_database(chunk, embed_text(chunk), constants.VIDEO_FILE_IN, frameList[0], 0) for chunk in speech_chunks]
 
         #audio_embedding = embed_text(audio_text)
         #print(audio_text)
