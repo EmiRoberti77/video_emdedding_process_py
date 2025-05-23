@@ -126,26 +126,31 @@ def save_embedding_to_database(text, embedding, video_file, frame_file, time_cod
 
 
 if __name__ == constants.MAIN:
-    video = input('>video y/n?')
-    print(f"video:{video}")
-    audio = input('>audio y/n?')
-    print(f"audio:{audio}")
-    frameList = extract_keyframes()
-    if video == 'y':        
-        embed_frames()
+    del_col = input(">delete collection y/n?")
+    if del_col == "y":
+        ret = cm.deleteCollection(constants.VECTOR_COLLECTION_NAME)
+        print(ret)
+    else:    
+        video = input('>video y/n?')
+        print(f"video:{video}")
+        audio = input('>audio y/n?')
+        print(f"audio:{audio}")
+        frameList = extract_keyframes()
+        if video == 'y':        
+            embed_frames()
 
-    if audio == 'y':
+        if audio == 'y':
+            
+            audio_text = transcribe_audio('tiny')
+            speech_chunks = chunk_text(audio_text)
+            if _DEBUG ==  True:
+                [print(F"[{chunk}]") for chunk in speech_chunks]
+
+            [save_embedding_to_database(chunk, embed_text(chunk), constants.VIDEO_FILE_IN, frameList[0], 0) for chunk in speech_chunks]
+
+            #audio_embedding = embed_text(audio_text)
+            #print(audio_text)
+            #print(audio_embedding)
         
-        audio_text = transcribe_audio('tiny')
-        speech_chunks = chunk_text(audio_text)
-        if _DEBUG ==  True:
-            [print(F"[{chunk}]") for chunk in speech_chunks]
-
-        [save_embedding_to_database(chunk, embed_text(chunk), constants.VIDEO_FILE_IN, frameList[0], 0) for chunk in speech_chunks]
-
-        #audio_embedding = embed_text(audio_text)
-        #print(audio_text)
-        #print(audio_embedding)
-    
-    ##clean_up_output_dir()
-    transfer_frames_to_s3()
+        ##clean_up_output_dir()
+        transfer_frames_to_s3()

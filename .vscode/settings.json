@@ -2,6 +2,7 @@
   "cSpell.words": [
     "chromadb",
     "dotenv",
+    "hnsw",
     "imwrite",
     "keyframes",
     "metadatas",
