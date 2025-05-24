@@ -2,4 +2,5 @@ venv
 .env
 output
 chroma_store
-__pycache__/
+__pycache__/pwd
+path_to_your_db

@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from chromadb import PersistentClient
 from typing import List
-from constants.constants import VECTOR_DB_INIT, VECTOR_COLLECTION_CREATED
+from constants.constants import VECTOR_DB_INIT, VECTOR_COLLECTION_CREATED, OPENAI_API_KEY
+import chromadb.utils.embedding_functions as embedding_functions
 
+_OPENAI_TEXT_EMBEDDING_3_SMALL="text-embedding-3-small"
+    
 @dataclass
 class FrameData:    
     embedding: List[float]
@@ -14,16 +17,25 @@ class FrameData:
     id:str
 
 
+openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+    api_key=OPENAI_API_KEY,
+    model_name=_OPENAI_TEXT_EMBEDDING_3_SMALL
+)
+
 class CollectionManager:
-    def __init__(self, persist_directory, collection) -> None:
+    def __init__(self, persist_directory, collection_name) -> None:
+        print(f"persist_directory {persist_directory}")
+        print(f"collection_name {collection_name}")
         self.chroma_client = PersistentClient(path=persist_directory)
+        self.collection_name = collection_name
         print(VECTOR_DB_INIT)
 
-        if self.collection_exists(collection):
-            print(f"{collection} found")
+        if self.collection_exists(collection_name):
+            print(f"{collection_name} already exists")
         else:            
+            print(f"creating collection new {collection_name}")
             self.collection = self.chroma_client.get_or_create_collection(
-                name="my_collection_complete",
+                name=self.collection_name,
                 configuration={
                     "hnsw": {
                         "space": "cosine",
@@ -32,7 +44,7 @@ class CollectionManager:
                         "max_neighbors": 16,
                         "num_threads": 4
                     },
-                    "embedding_function": None,
+                    "embedding_function": openai_ef,
                     "dimensions": 1536
                 }
             )
