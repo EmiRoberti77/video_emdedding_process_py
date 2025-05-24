@@ -21,7 +21,7 @@ This project provides a full pipeline to:
 
 ## 🛠️ Tech Stack
 
-- `Python 3.11+`
+- `Python 3.11.9`
 - `Whisper` (OpenAI)
 - `Transformers` (CLIP from Hugging Face)
 - `Torch` for tensor operations
@@ -37,7 +37,7 @@ This project provides a full pipeline to:
 
 ## ⚙️ Setup
 
-### 1. Clone and create a virtual environment:
+### 1. Clone and create a virtual environment
 
 ```bash
 git clone <repo-url>
@@ -74,7 +74,7 @@ You’ll be prompted:
 
 Select y to process the video and/or transcribe + embed audio
 
-### ✏️ Notes
+###  ✏️ Notes
 
 - Whisper models available: "tiny", "base", "small", "medium", "large", "turbo" (if using OpenAI hosted)
 - Frame extraction interval and input paths are defined in constants.py
@@ -84,4 +84,4 @@ Select y to process the video and/or transcribe + embed audio
 
 - Upload to AWS S3 or other cloud storage
 - Store embeddings in a vector database (like Pinecone or Weaviate)
-- Parallelise frame and audio processing for speed
+- Parallelize frame and audio processing for speed

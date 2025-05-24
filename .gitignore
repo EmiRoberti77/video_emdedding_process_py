@@ -1,4 +1,6 @@
 venv
 .env
 output
-__pycache__/
+chroma_store
+__pycache__/pwd
+path_to_your_db

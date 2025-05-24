@@ -1,27 +1,30 @@
 """Main module for extracting and embedding keyframes."""
 
 import os
+import shutil
+import re
+from typing import List
+import uuid
 import cv2
 import torch
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
-from dotenv import load_dotenv
-import shutil
 from constants import constants
+from vector_db.collection_manager import CollectionManager as CM, FrameData
 import whisper
 from openai import OpenAI
 
-load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-print(OPENAI_API_KEY)
+_DEBUG = False
+print(constants.OPENAI_API_KEY)
+model = OpenAI(api_key=constants.OPENAI_API_KEY)
 
-model = OpenAI(api_key=OPENAI_API_KEY)
+cm = CM(constants.VECTOR_STORE, constants.VECTOR_COLLECTION_NAME)
 
-
-def extract_keyframes():
+def extract_keyframes()->List[str]:
     """Extract keyframes from video at fixed intervals."""
     print('keyframe extraction', constants.VIDEO_FILE_IN)
+    frameList = []
     print(os.path.exists(constants.VIDEO_FILE_IN))
     os.makedirs(constants.OUTPUT_FOLDER, exist_ok=True)
     cap = cv2.VideoCapture(constants.VIDEO_FILE_IN)
@@ -39,9 +42,11 @@ def extract_keyframes():
             fname = os.path.join(constants.OUTPUT_FOLDER, f"frame_{saved}.jpg")
             cv2.imwrite(fname, frame)
             saved += 1
+            frameList.append(fname)
         count += 1
 
     cap.release()
+    return frameList
 
 
 def embed_frames():
@@ -64,6 +69,21 @@ def embed_frames():
             print(constants.EMBEDDING)
     return embeddings
 
+def chunk_text(text, chunk_size=200):
+    """
+        Function to break large text that has come from audio transcoding.
+        When looking to turn text into embeddings, best to keep to about 
+        512, 1024 tokens. About 200 words.
+    """
+    text_len = len(text)
+    words = re.findall(r'\b\w+\b', text)
+    word_count = len(words)
+    print('text len', text_len)
+    print('word count', word_count)
+    chunks = [" ".join(words[i:i + chunk_size]) for i in range(0, word_count, chunk_size)]
+    return chunks
+
+
 def embed_text(text):
     """Function to embed text, this text has been extracted from the audio track"""
     response = model.embeddings.create(
@@ -73,7 +93,7 @@ def embed_text(text):
     return response.data[0].embedding
 
 def transfer_frames_to_s3():
-    """Placeholder for uploading frames to S3."""
+    """Placeholder for uploading frames to S3"""
     return 0
 
 def transcribe_audio(model):
@@ -88,23 +108,49 @@ def clean_up_output_dir():
     print(constants.CLEAN_UP)
     return 0
 
+def save_embedding_to_database(text, embedding, video_file, frame_file, time_code):
+    print(len(text))
+    print(len(embedding))
+    frameData = FrameData(
+        id=str(uuid.uuid4()),
+        text=text,
+        embedding=embedding,
+        video_file=video_file,
+        frame_file=frame_file,
+        time_code=time_code,
+        frame_type='image'
+    )
+    ret = cm.save_frame_data(frameData=frameData)
+    print('saving to database', ret)
+    return 0
+
 
 if __name__ == constants.MAIN:
-    video = input('>video y/n?')
-    print(f"video:{video}")
-    audio = input('>audio y/n?')
-    print(f"audio:{audio}")
+    del_col = input(">delete collection y/n?")
+    if del_col == "y":
+        ret = cm.deleteCollection(constants.VECTOR_COLLECTION_NAME)
+        print(ret)
+    else:    
+        video = input('>video y/n?')
+        print(f"video:{video}")
+        audio = input('>audio y/n?')
+        print(f"audio:{audio}")
+        frameList = extract_keyframes()
+        if video == 'y':        
+            embed_frames()
 
-    if video == 'y':
-        extract_keyframes()
-        embed_frames()
+        if audio == 'y':
+            
+            audio_text = transcribe_audio('tiny')
+            speech_chunks = chunk_text(audio_text)
+            if _DEBUG ==  True:
+                [print(F"[{chunk}]") for chunk in speech_chunks]
 
-    if audio == 'y':
-        audio_text = transcribe_audio('tiny') #could also pass turbo for higher quality speech to text decode
-        audio_embedding = embed_text(audio_text)
-        print(audio_text)
-        print(audio_embedding)
-    
-    ##clean_up_output_dir()
-    transfer_frames_to_s3()
-    
+            [save_embedding_to_database(chunk, embed_text(chunk), constants.VIDEO_FILE_IN, frameList[0], 0) for chunk in speech_chunks]
+
+            #audio_embedding = embed_text(audio_text)
+            #print(audio_text)
+            #print(audio_embedding)
+        
+        ##clean_up_output_dir()
+        transfer_frames_to_s3()

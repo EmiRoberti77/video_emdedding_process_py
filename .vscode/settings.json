@@ -1,3 +1,14 @@
 {
-  "cSpell.words": ["dotenv", "imwrite", "OPENAI"]
+  "cSpell.words": [
+    "chromadb",
+    "dotenv",
+    "hnsw",
+    "imwrite",
+    "keyframes",
+    "metadatas",
+    "OPENAI",
+    "pyenv",
+    "venv",
+    "Weaviate"
+  ]
 }
